@@ -1,0 +1,8 @@
+__pycache__/
+*.~
+eventflow/*~
+eventflow/config.ini
+eventflow/__pycache__/
+data/
+visualization/
+stuff/

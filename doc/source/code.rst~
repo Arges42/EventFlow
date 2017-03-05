@@ -1,0 +1,43 @@
+Auto Generated Documentation
+============================
+
+Core functionality
+------------------
+
+.. autoclass:: eventflow.EventGraph
+    :members:
+
+    .. automethod:: eventflow.EventGraph.__init__
+
+.. autoclass:: eventflow.GraphCollection
+    :members:
+
+    .. automethod:: eventflow.GraphCollection.__init__
+
+.. autoclass:: eventflow.Actor
+    :members:
+
+    .. automethod:: eventflow.Actor.__init__
+
+.. autofunction:: eventflow.from_csv
+
+.. autofunction:: eventflow.empty_graph_data
+
+
+Drawing
+-------
+
+.. autoclass:: eventflow.drawing.GraphLayer
+    :members:
+
+    .. automethod:: eventflow.drawing.GraphLayer.__init__
+
+.. autoclass:: eventflow.drawing.Edge
+    :members:
+
+    .. automethod:: eventflow.drawing.GraphLayer.__init__
+
+Util
+----
+
+.. autofunction:: eventflow.util.adrastea

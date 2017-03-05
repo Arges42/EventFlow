@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventflow.util &#8212; EventFlow 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">EventFlow 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eventflow.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">sshtunnel</span> <span class="k">import</span> <span class="n">SSHTunnelForwarder</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="k">import</span> <span class="n">MongoClient</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+<span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s2">&quot;config.ini&quot;</span><span class="p">))</span>
+
+<span class="n">SSH_HOST</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;SSH&quot;</span><span class="p">][</span><span class="s2">&quot;SSH_HOST&quot;</span><span class="p">]</span>
+<span class="n">SSH_PORT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;SSH&quot;</span><span class="p">][</span><span class="s2">&quot;SSH_PORT&quot;</span><span class="p">])</span>
+<span class="n">LDAP_USER_NAME</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;SSH&quot;</span><span class="p">][</span><span class="s2">&quot;LDAP_USER_NAME&quot;</span><span class="p">]</span>
+<span class="n">LDAP_PASSWORD</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;SSH&quot;</span><span class="p">][</span><span class="s2">&quot;LDAP_PASSWORD&quot;</span><span class="p">]</span>
+<span class="n">MONGODB_HOST</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;MONGODB&quot;</span><span class="p">][</span><span class="s2">&quot;MONGODB_HOST&quot;</span><span class="p">]</span>
+<span class="n">MONGODB_PORT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;MONGODB&quot;</span><span class="p">][</span><span class="s2">&quot;MONGODB_PORT&quot;</span><span class="p">])</span>
+<span class="n">MONGODB_AUTHENTICATION_DB</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;MONGODB&quot;</span><span class="p">][</span><span class="s2">&quot;MONGODB_AUTHENTICATION_DB&quot;</span><span class="p">]</span>
+<span class="n">MONGODB_USER_NAME</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;MONGODB&quot;</span><span class="p">][</span><span class="s2">&quot;MONGODB_USER_NAME&quot;</span><span class="p">]</span>
+<span class="n">MONGODB_PASSWORD</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;MONGODB&quot;</span><span class="p">][</span><span class="s2">&quot;MONGODB_PASSWORD&quot;</span><span class="p">]</span>
+
+
+<span class="n">EVENT_TRIPLES</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;EVENT_TRIPLES&quot;</span><span class="p">]</span>
+<span class="n">WIKIDATA</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;WIKIDATA&quot;</span><span class="p">]</span>
+<span class="n">WIKIDATA_EN</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;WIKIDATA_EN&quot;</span><span class="p">]</span>
+
+<span class="n">EVENTFLOW_COLLECTION</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;EVENTFLOW_COLLECTION&quot;</span><span class="p">]</span>
+<span class="n">EVENTFLOW_NODES</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;EVENTFLOW_NODES&quot;</span><span class="p">]</span>
+<span class="n">EVENTFLOW_EDGES</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;DATABASE&quot;</span><span class="p">][</span><span class="s2">&quot;EVENTFLOW_EDGES&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="adrastea"><a class="viewcode-back" href="../../code.html#eventflow.util.adrastea">[docs]</a><span class="k">def</span> <span class="nf">adrastea</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for the automatic ssh connection to the specified SSH-Port and</span>
+<span class="sd">    MongoDB. The connection details can be set in the config.ini file.</span>
+
+<span class="sd">    Possible kwargs:</span>
+
+<span class="sd">    :param extra_args: function that accepts a configparser and adds</span>
+<span class="sd">        parser arguments</span>
+<span class="sd">    :type extra_args: function(parser): return parser</span>
+
+<span class="sd">    Usage is as simple as::</span>
+
+<span class="sd">        from eventflow.util import adrastea</span>
+
+<span class="sd">        @adrastea()</span>
+<span class="sd">        def foo():</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">adrastea_inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">ssh_connect</span><span class="p">(</span><span class="o">*</span><span class="n">args2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs2</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">SSHTunnelForwarder</span><span class="p">((</span><span class="n">SSH_HOST</span><span class="p">,</span> <span class="n">SSH_PORT</span><span class="p">),</span>
+                                    <span class="n">ssh_username</span><span class="o">=</span><span class="n">LDAP_USER_NAME</span><span class="p">,</span>
+                                    <span class="n">ssh_password</span><span class="o">=</span><span class="n">LDAP_PASSWORD</span><span class="p">,</span>
+                                    <span class="n">remote_bind_address</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">MONGODB_PORT</span><span class="p">),</span>
+                                    <span class="n">local_bind_address</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">MONGODB_PORT</span><span class="p">)</span>
+                                    <span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Connected via SSH and established port-forwarding&#39;</span><span class="p">)</span>
+                <span class="n">client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="n">MONGODB_HOST</span><span class="p">,</span> <span class="n">MONGODB_PORT</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">client</span><span class="p">[</span><span class="n">MONGODB_AUTHENTICATION_DB</span><span class="p">]</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span>
+                        <span class="n">MONGODB_USER_NAME</span><span class="p">,</span> <span class="n">MONGODB_PASSWORD</span><span class="p">)</span>
+                    <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                    <span class="n">env</span><span class="p">[</span><span class="s1">&#39;client&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
+                    <span class="k">if</span> <span class="s2">&quot;extra_args&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                        <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+                        <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;extra_args&quot;</span><span class="p">](</span><span class="n">parser</span><span class="p">)))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Authenticated on mongodb&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">args2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args2</span><span class="p">)</span>
+                    <span class="n">args2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs2</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Connection closed&#39;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">ssh_connect</span>
+    <span class="k">return</span> <span class="n">adrastea_inner</span></div>
+
+
+<span class="k">def</span> <span class="nf">date_parser</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+    <span class="n">years</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">months</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">years</span><span class="p">,</span> <span class="n">months</span><span class="p">,</span> <span class="n">days</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">line_profiler</span> <span class="k">import</span> <span class="n">LineProfiler</span>
+
+    <span class="k">def</span> <span class="nf">do_profile</span><span class="p">(</span><span class="n">follow</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">profiled_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">profiler</span> <span class="o">=</span> <span class="n">LineProfiler</span><span class="p">()</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">add_function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">follow</span><span class="p">:</span>
+                        <span class="n">profiler</span><span class="o">.</span><span class="n">add_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">enable_by_count</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">profiler</span><span class="o">.</span><span class="n">print_stats</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">profiled_func</span>
+        <span class="k">return</span> <span class="n">inner</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">do_profile</span><span class="p">(</span><span class="n">follow</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="s2">&quot;Helpful if you accidentally leave in production!&quot;</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">nothing</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nothing</span>
+        <span class="k">return</span> <span class="n">inner</span>
+
+
+<span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;This is a decorator which can be used to mark functions</span>
+<span class="sd">    as deprecated. It will result in a warning being emitted</span>
+<span class="sd">    when the function is used.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">new_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn_explicit</span><span class="p">(</span>
+            <span class="s2">&quot;Call to deprecated function </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">),</span>
+            <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_filename</span><span class="p">,</span>
+            <span class="n">lineno</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_firstlineno</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_func</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">EventFlow 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Jan Greulich.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

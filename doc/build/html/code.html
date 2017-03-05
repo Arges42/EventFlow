@@ -1,0 +1,584 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Auto Generated Documentation &#8212; EventFlow 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Project Summary" href="project.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="project.html" title="Project Summary"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EventFlow 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="auto-generated-documentation">
+<h1>Auto Generated Documentation<a class="headerlink" href="#auto-generated-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="core-functionality">
+<h2>Core functionality<a class="headerlink" href="#core-functionality" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="eventflow.EventGraph">
+<em class="property">class </em><code class="descclassname">eventflow.</code><code class="descname">EventGraph</code><span class="sig-paren">(</span><em>nodes</em>, <em>edges</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#EventGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.EventGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for a single event graph.
+It manages the nodes andd edges for one specific actor.</p>
+<dl class="method">
+<dt id="eventflow.EventGraph.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>nodes</em>, <em>edges</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#EventGraph.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.EventGraph.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nodes</strong> (<em>pandas.DataFrame</em>) &#8211; Data frame which represents the set of nodes,
+should at least contain the columns [index_column, lat, lon]</li>
+<li><strong>edges</strong> (<em>pandas.DataFrame</em>) &#8211; Data frame which represents the set of edges,
+should at least contain the columns
+[from_node, from_date, to_node, to_date]</li>
+<li><strong>index_column</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the index column of the nodes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.EventGraph.build">
+<code class="descname">build</code><span class="sig-paren">(</span><em>start_date=None</em>, <em>end_date=None</em>, <em>color_edges=True</em>, <em>color_nodes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#EventGraph.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.EventGraph.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the valid time interval of the graph.
+Limit the number of edges and nodes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start_date</strong> (<em>String</em>) &#8211; yyyy-mm-dd (ISO 8601)</li>
+<li><strong>end_date</strong> &#8211; yyyy-mm-dd (ISO 8601)</li>
+<li><strong>color_edges</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether or not to compute the edge color
+based on occurence days</li>
+<li><strong>color_nodes</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether or not to compute the node color
+based on occurence days</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.EventGraph.edges">
+<code class="descname">edges</code><a class="headerlink" href="#eventflow.EventGraph.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Active set of edges.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.EventGraph.empty">
+<code class="descname">empty</code><a class="headerlink" href="#eventflow.EventGraph.empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the graph contain node and edges.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.EventGraph.max_date">
+<code class="descname">max_date</code><a class="headerlink" href="#eventflow.EventGraph.max_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total maximum date.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.EventGraph.min_date">
+<code class="descname">min_date</code><a class="headerlink" href="#eventflow.EventGraph.min_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total minimum date.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.EventGraph.nodes">
+<code class="descname">nodes</code><a class="headerlink" href="#eventflow.EventGraph.nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Active set of nodes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.EventGraph.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>directory='/home/jan/Uni/EventFlow/doc'</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#EventGraph.to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.EventGraph.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write nodes and edges to a direcotry. The files will include
+nodes/edges as part of their name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Output directory</li>
+<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Prefix for the saved files</li>
+<li><strong>suffix</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Suffix for the saved files</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="eventflow.GraphCollection">
+<em class="property">class </em><code class="descclassname">eventflow.</code><code class="descname">GraphCollection</code><span class="sig-paren">(</span><em>actor_list</em>, <em>client</em>, <em>load_function=&lt;function get_graph&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages the actors and their resepective EventGraph&#8217;s.
+Queries the data from the database and stores them in a cache.</p>
+<dl class="method">
+<dt id="eventflow.GraphCollection.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>actor_list</em>, <em>client</em>, <em>load_function=&lt;function get_graph&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor_list</strong> (<em>list of either actor ids</em><em>, </em><em>wikidata ids</em><em>
+or </em><em>string labels</em>) &#8211; List of actors, for which to fetch the EventGraph</li>
+<li><strong>client</strong> (<em>pymongo.MongoClient</em>) &#8211; The client for the database access</li>
+<li><strong>load_function</strong> (<em>function -&gt; load_function</em><em>(</em><em>client</em><em>, </em><em>actorID</em><em>)</em><em>:
+return nodes</em><em>, </em><a class="reference internal" href="#eventflow.EventGraph.edges" title="eventflow.EventGraph.edges"><em>edges</em></a>) &#8211; Function which queries for the nodes and edges</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="eventflow.GraphCollection.actors">
+<code class="descname">actors</code><a class="headerlink" href="#eventflow.GraphCollection.actors" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of actors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>actor</em>, <em>graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a graph with its associated actor to the graph collection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor</strong> (<em>eventflow.core.Actor</em>) &#8211; Associated actor</li>
+<li><strong>graph</strong> (<em>eventflow.core.EventGraph</em>) &#8211; EventGraph</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear everything. Empties the cache and the saved actors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.get_actor">
+<code class="descname">get_actor</code><span class="sig-paren">(</span><em>actor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.get_actor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.get_actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an actor by its id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_id</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Id of the actor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.get_cache_entry">
+<code class="descname">get_cache_entry</code><span class="sig-paren">(</span><em>actor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.get_cache_entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.get_cache_entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a cached EventGraph with the actorID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_id</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Id of the actor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.graphs">
+<code class="descname">graphs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.graphs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.graphs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator for the graphs.
+If an EventGraph is not stored in the cache,
+it is fetched with _query_graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.remove_actor">
+<code class="descname">remove_actor</code><span class="sig-paren">(</span><em>actor_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.remove_actor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.remove_actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an actor from the collection, if a cached graph
+is associated with the actorID it is also deleated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_id</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Id of the actor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.GraphCollection.update_actor_list">
+<code class="descname">update_actor_list</code><span class="sig-paren">(</span><em>actor_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#GraphCollection.update_actor_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.GraphCollection.update_actor_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal list of actors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actor_list</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; Single actorID or list of actorIDs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="eventflow.Actor">
+<em class="property">class </em><code class="descclassname">eventflow.</code><code class="descname">Actor</code><span class="sig-paren">(</span><em>actor_id</em>, <em>client=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#Actor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.Actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience class to enable an easy Actor manipulation and querying.</p>
+<dl class="method">
+<dt id="eventflow.Actor.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>actor_id</em>, <em>client=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#Actor.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.Actor.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>If no client is given, nothing will happen.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>actor_id</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Id of the actor</li>
+<li><strong>client</strong> (<em>pymongo.MongoClient</em>) &#8211; MongoDB client</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="eventflow.Actor.from_csv">
+<em class="property">static </em><code class="descname">from_csv</code><span class="sig-paren">(</span><em>filename</em>, <em>sep=';'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#Actor.from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.Actor.from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a csv file and import the attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Input filename</li>
+<li><strong>sep</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Separator used in the csv</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.Actor.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>directory='/home/jan/Uni/EventFlow/doc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#Actor.to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.Actor.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the actorID, name and wikidataID to a csv file.
+The file will be named actorID_actor.csv.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Output directory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="eventflow.from_csv">
+<code class="descclassname">eventflow.</code><code class="descname">from_csv</code><span class="sig-paren">(</span><em>filename_nodes</em>, <em>filename_edges</em>, <em>node_kwargs={}</em>, <em>edge_kwargs={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an EventGraph from csv files.
+If the loaded columns are not identical to the columns specified in
+NODES_SCHEMA and EDGES_SCHEMA, the function will exit.
+The read functions tries to get the correct index columns for the nodes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename_nodes</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Filename containing the node data</li>
+<li><strong>filename_edges</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Filename containing the edge data</li>
+<li><strong>node_kwags</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Kwargs for pd.read_csv (node file)</li>
+<li><strong>edge_kwagss</strong> &#8211; Kwargs for pd.read_csv (edge file)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="eventflow.empty_graph_data">
+<code class="descclassname">eventflow.</code><code class="descname">empty_graph_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/core.html#empty_graph_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.empty_graph_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build an empty event graph, based on the NODES and EDGES SCHEMA.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="drawing">
+<h2>Drawing<a class="headerlink" href="#drawing" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="eventflow.drawing.GraphLayer">
+<em class="property">class </em><code class="descclassname">eventflow.drawing.</code><code class="descname">GraphLayer</code><span class="sig-paren">(</span><em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages all active graphs and the created matplotlib artists.
+The class provides some basic functionalities to enhance the 
+user experience, like hovering and on click.</p>
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axes</strong> (<em>matplotlib.axes.Axes</em>) &#8211; Matplotlib axes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.hide_annotation">
+<code class="descname">hide_annotation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.hide_annotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.hide_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>If possible hide the annotation box.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.hide_by_actor">
+<code class="descname">hide_by_actor</code><span class="sig-paren">(</span><em>actorID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.hide_by_actor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.hide_by_actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the actor and the associated graph from the axes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>actorID</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; ID of the actor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.hover">
+<code class="descname">hover</code><span class="sig-paren">(</span><em>event</em>, <em>tol=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.hover"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.hover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback function for mplcallback.onmove.
+This function will set the last_node if it was in range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>event</strong> (<em>matplotlib.backend_bases.MouseEvent</em>) &#8211; mouse move event</li>
+<li><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; tolerance in pixel</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.on_press">
+<code class="descname">on_press</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.on_press"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.on_press" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback function for on_click event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<em>matplotlib.backend_bases.MouseEvent</em>) &#8211; matplotlib on press event</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the axes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.show_annotation">
+<code class="descname">show_annotation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.show_annotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.show_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a node was internally set, an annotation box will show up
+for that node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="eventflow.drawing.GraphLayer.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>graph</em>, <em>actorID=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#GraphLayer.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.GraphLayer.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the graph layer, by adding an additional graph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>graph</strong> (<a class="reference internal" href="#eventflow.EventGraph" title="eventflow.EventGraph"><em>eventflow.EventGraph</em></a>) &#8211; Event graph</li>
+<li><strong>actorID</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; associated actor</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="eventflow.drawing.Edge">
+<em class="property">class </em><code class="descclassname">eventflow.drawing.</code><code class="descname">Edge</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#Edge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.Edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper class for the matplotlib.patches.FancyArrowPatch.
+The edge will be styled to display a nice directed edge.
+The edge will keep track of the starting and end node.</p>
+<dl class="method">
+<dt id="eventflow.drawing.Edge.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/drawing.html#Edge.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.drawing.Edge.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>from_node</strong> (<em>pandas.Series</em>) &#8211; Starting node</li>
+<li><strong>to_node</strong> (<em>pandas.Series</em>) &#8211; End node</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>All other kwargs are passed to matplotlib.patches.FancyArrowPatch</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="util">
+<h2>Util<a class="headerlink" href="#util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="eventflow.util.adrastea">
+<code class="descclassname">eventflow.util.</code><code class="descname">adrastea</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/eventflow/util.html#adrastea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eventflow.util.adrastea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the automatic ssh connection to the specified SSH-Port and
+MongoDB. The connection details can be set in the config.ini file.</p>
+<p>Possible kwargs:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_args</strong> (<em>function</em><em>(</em><a class="reference external" href="https://docs.python.org/2/library/parser.html#module-parser" title="(in Python v2.7)"><em>parser</em></a><em>)</em><em>: return parser</em>) &#8211; function that accepts a configparser and adds
+parser arguments</td>
+</tr>
+</tbody>
+</table>
+<p>Usage is as simple as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eventflow.util</span> <span class="k">import</span> <span class="n">adrastea</span>
+
+<span class="nd">@adrastea</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Auto Generated Documentation</a><ul>
+<li><a class="reference internal" href="#core-functionality">Core functionality</a></li>
+<li><a class="reference internal" href="#drawing">Drawing</a></li>
+<li><a class="reference internal" href="#util">Util</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="project.html"
+                        title="previous chapter">Project Summary</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/code.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="project.html" title="Project Summary"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">EventFlow 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Jan Greulich.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

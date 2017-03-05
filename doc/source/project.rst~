@@ -1,0 +1,67 @@
+Project Summary
+===============
+
+Short summary of the features and some example visualizations.
+
+Features
+--------
+
+**Feature 1** - High-level api
+
+The event graphs are summarizied in a compact class, which offer basic manipulation api, 
+without worrying about the exact event triples.
+
+**Feature 2** - Visualization
+
+The event graphs are computed for a single actor and these can then be visualized in the event explorer app.
+
+**Feature 3** - Drawing api
+
+The drawing api can be used without the app, making it accesible to everybody who just wants to have a quick peek at the data.
+
+**Feature 4** - Exemplary setup of the event graph database
+
+Examples
+--------
+
+The event explorer can be used to visualize the activities of actors, 
+either standalone or in combination with other actors. The following snapshots show some
+sample usages. Figure 1 highlights the journeys of Christoper Columbus. While figure 2 and 3 show 
+the activities of Angela Merkel and Barack Obama in the year 2015. Merkel traveled mostly in Europe while
+Obama was mentioned almost all over the world.
+
+.. figure:: ./img/columbus.png
+    :figclass: align-center
+
+    The live of Columbus, between 1451 and 1506.
+
+
+.. figure:: ./img/merkel_2015.png
+    :figclass: align-center
+
+    Angela Merkel in the year 2015.
+
+
+.. figure:: ./img/obama_2015.png
+    :figclass: align-center
+
+    Barack Obama in the year 2015.
+
+The following two screenshots show the complete interface of the app. Active actors are shown on the left side, while 
+the right side gives extra informations about the location (who was mentioned when at that location).
+Unfortunately the zoom in on Shima does not show the G7-meeting which took place between the 26.05.2016 and 27.05.2016.
+
+.. |g7| image:: ./img/g7.png
+.. |shima| image:: ./img/g7_shima.png
+
++------+---------+
+| |g7| | |shima| |
++------+---------+
+
+TODO's
+------
+
+* Implement the intersection of two event graphs 
+* Implement a similarity like search for similar paths
+* Show the results in the event explorer
+* Make the mongodb client not mandatory for usage

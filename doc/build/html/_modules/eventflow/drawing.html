@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventflow.drawing &#8212; EventFlow 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">EventFlow 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eventflow.drawing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">clr</span>
+<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">mpatches</span>
+<span class="kn">from</span> <span class="nn">matplotlib.offsetbox</span> <span class="k">import</span> <span class="n">TextArea</span><span class="p">,</span> <span class="n">AnnotationBbox</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">geopandas</span> <span class="k">import</span> <span class="n">GeoDataFrame</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="k">import</span> <span class="n">nearest_points</span>
+
+<span class="kn">from</span> <span class="nn">eventflow.util</span> <span class="k">import</span> <span class="n">do_profile</span>
+
+<div class="viewcode-block" id="GraphLayer"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer">[docs]</a><span class="k">class</span> <span class="nc">GraphLayer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Manages all active graphs and the created matplotlib artists.</span>
+<span class="sd">    The class provides some basic functionalities to enhance the </span>
+<span class="sd">    user experience, like hovering and on click.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GraphLayer.__init__"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param axes: Matplotlib axes</span>
+<span class="sd">        :type axes: matplotlib.axes.Axes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_edges</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span> <span class="o">=</span> <span class="n">axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_node</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="s1">&#39;epsg:4326&#39;</span><span class="p">}</span>
+        <span class="n">node_structure</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;WDid&quot;</span><span class="p">,</span> <span class="s2">&quot;radius&quot;</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">node_structure</span><span class="p">,</span> <span class="n">crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">unary_union</span></div>
+
+<div class="viewcode-block" id="GraphLayer.update"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">actorID</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the graph layer, by adding an additional graph.</span>
+
+<span class="sd">        :param graph: Event graph</span>
+<span class="sd">        :type graph: eventflow.EventGraph</span>
+<span class="sd">        :param actorID: associated actor</span>
+<span class="sd">        :type actorID: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">actorID</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_actors</span><span class="p">[</span><span class="n">actorID</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ec</span> <span class="o">=</span> <span class="n">clr</span><span class="o">.</span><span class="n">hex2color</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">color</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">ec</span> <span class="o">=</span> <span class="s2">&quot;b&quot;</span>
+            <span class="n">from_node</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">from_node</span><span class="p">]</span>
+            <span class="n">to_node</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">to_node</span><span class="p">]</span>
+            <span class="n">edge_patch</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="n">from_node</span> <span class="o">=</span> <span class="n">from_node</span><span class="p">,</span> <span class="n">to_node</span> <span class="o">=</span> <span class="n">to_node</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">ec</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">ec</span><span class="p">,</span> <span class="n">zorder</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">eid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">edge_patch</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_edges</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">eid</span>
+            <span class="k">if</span> <span class="n">actorID</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_actors</span><span class="p">[</span><span class="n">actorID</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_node</span><span class="p">(</span><span class="n">from_node</span><span class="p">,</span> <span class="n">actorID</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_node</span><span class="p">(</span><span class="n">to_node</span><span class="p">,</span> <span class="n">actorID</span><span class="p">)</span>
+        
+        <span class="c1"># A little bit hacky, because I rely on the fact the the edges are ordered and the reference to the last edge still exists</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">to_node</span><span class="p">,</span> <span class="s2">&quot;radius&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">unary_union</span></div>
+
+<div class="viewcode-block" id="GraphLayer.hide_by_actor"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.hide_by_actor">[docs]</a>    <span class="k">def</span> <span class="nf">hide_by_actor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actorID</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove the actor and the associated graph from the axes.</span>
+
+<span class="sd">        :param actorID: ID of the actor</span>
+<span class="sd">        :type actorID: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Node color is not updated properly</span>
+        <span class="n">edge_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">actorID</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">for</span> <span class="n">edge_id</span> <span class="ow">in</span> <span class="n">edge_ids</span><span class="p">:</span>
+            <span class="n">edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edges</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">edge_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">to_node</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">from_node</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+            <span class="n">edge</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">degree</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GraphLayer.plot"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot the axes.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nids</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">y</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>            
+            <span class="n">radius</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_actual_radius</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">radius</span><span class="p">]</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">color</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;b&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">radius</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmap</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GraphLayer.show_annotation"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.show_annotation">[docs]</a>    <span class="k">def</span> <span class="nf">show_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If a node was internally set, an annotation box will show up</span>
+<span class="sd">        for that node.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_annotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">annotation_artist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to show annotation box&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw_idle</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GraphLayer.hide_annotation"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.hide_annotation">[docs]</a>    <span class="k">def</span> <span class="nf">hide_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If possible hide the annotation box.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">annotation_artist</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw_idle</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GraphLayer.hover"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.hover">[docs]</a>    <span class="k">def</span> <span class="nf">hover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;Callback function for mplcallback.onmove.</span>
+<span class="sd">        This function will set the last_node if it was in range.</span>
+
+<span class="sd">        :param event: mouse move event</span>
+<span class="sd">        :type event: matplotlib.backend_bases.MouseEvent</span>
+<span class="sd">        :param tol: tolerance in pixel</span>
+<span class="sd">        :type tol: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">xdata</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nearest_point</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_node</span><span class="p">:</span>              
+                <span class="bp">self</span><span class="o">.</span><span class="n">hide_annotation</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_node</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">show_annotation</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hide_annotation</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_node</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="GraphLayer.on_press"><a class="viewcode-back" href="../../code.html#eventflow.drawing.GraphLayer.on_press">[docs]</a>    <span class="k">def</span> <span class="nf">on_press</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Callback function for on_click event.</span>
+
+<span class="sd">        :param event: matplotlib on press event</span>
+<span class="sd">        :type event: matplotlib.backend_bases.MouseEvent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">button</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">xdata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nearest_point</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">actorID</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="c1">#TODO: Currently the color is not overridden</span>
+            <span class="c1"># I have to check what color represents the last visit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">node</span><span class="o">.</span><span class="n">color</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">color</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">([[</span><span class="n">node</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">WDid</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">color</span><span class="p">]],</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;WDid&quot;</span><span class="p">,</span> <span class="s2">&quot;radius&quot;</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">],</span>
+                <span class="n">geometry</span> <span class="o">=</span> <span class="p">[</span><span class="n">Point</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">lon</span><span class="p">)],</span> <span class="n">crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">nodeID</span><span class="p">]</span>
+        <span class="n">offsetbox</span> <span class="o">=</span> <span class="n">TextArea</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">minimumdescent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">ab</span> <span class="o">=</span> <span class="n">AnnotationBbox</span><span class="p">(</span><span class="n">offsetbox</span><span class="p">,</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+            <span class="n">xybox</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+            <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
+            <span class="n">boxcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ab</span>
+
+    <span class="k">def</span> <span class="nf">_nearest_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">nearest</span> <span class="o">=</span> <span class="n">nearest_points</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_point</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nearest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">nearest</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_spatial_index</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">nearest</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">idx</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to compute nearest point: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">wkt</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">nearest</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_actual_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the radius of the markers as an exponential growth </span>
+<span class="sd">        limited by an upper bound s. Growth factor k determines the convergence speed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">s</span> <span class="o">-</span> <span class="p">((</span><span class="n">s</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="o">*</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="Edge"><a class="viewcode-back" href="../../code.html#eventflow.drawing.Edge">[docs]</a><span class="k">class</span> <span class="nc">Edge</span><span class="p">(</span><span class="n">mpatches</span><span class="o">.</span><span class="n">FancyArrowPatch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper class for the matplotlib.patches.FancyArrowPatch.</span>
+<span class="sd">    The edge will be styled to display a nice directed edge.</span>
+<span class="sd">    The edge will keep track of the starting and end node.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Edge.__init__"><a class="viewcode-back" href="../../code.html#eventflow.drawing.Edge.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param from_node: Starting node</span>
+<span class="sd">        :type from_node: pandas.Series</span>
+<span class="sd">        :param to_node: End node</span>
+<span class="sd">        :type to_node: pandas.Series</span>
+<span class="sd">        </span>
+<span class="sd">        All other kwargs are passed to matplotlib.patches.FancyArrowPatch</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">from_node</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;from_node&quot;</span><span class="p">)</span>
+        <span class="n">to_node</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;to_node&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_node</span> <span class="o">=</span> <span class="n">from_node</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_node</span> <span class="o">=</span> <span class="n">to_node</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">arrow_style</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">ArrowStyle</span><span class="p">(</span><span class="s2">&quot;-|&gt;&quot;</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;arrowstyle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrow_style</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;posA&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">from_node</span><span class="p">[[</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span><span class="s2">&quot;lon&quot;</span><span class="p">]])</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;posB&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">to_node</span><span class="p">[[</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span><span class="s2">&quot;lon&quot;</span><span class="p">]])</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">Edge</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> </div></div>
+
+        
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">EventFlow 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Jan Greulich.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
